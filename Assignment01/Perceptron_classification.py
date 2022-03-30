@@ -230,7 +230,7 @@ def decision_boundary(model, X, y, density = 0.1, padding = 1):
 
 	zz = yhat.reshape(xx.shape)
 
-	plt.contourf(xx, yy, zz, cmap='Paired')
+	plt.contourf(xx, yy, zz, cmap="Paired")
 
 	plt.scatter(X[:,0], X[:,1], c = y, s = 5)
 	plt.show()
