@@ -10,7 +10,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 
 # %%
 
-NLSpath = "/home/abc/Documents/sem 6/deep learning/Group 16_Assignment1/data/Group16/Classification/NLS_Group16.txt"
+NLSpath = "./data/Group16/Classification/NLS_Group16.txt"
 
 def seperate_data():
     df2 = pd.read_csv(NLSpath, names=["x", "y"], sep=" ", dtype={

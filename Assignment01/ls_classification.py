@@ -1,4 +1,4 @@
-
+# %%
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -9,8 +9,8 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 
 # Colecting LS Data
 
-LSpath = "/home/abc/Documents/sem 6/deep learning/Group 16_Assignment1/data/Group16/Classification/LS_Group16/"
-NLSpath = "/home/abc/Documents/sem 6/deep learning/Group 16_Assignment1/data/Group16/Classification/NLS_Group16.txt"
+LSpath = "./data/Group16/Classification/LS_Group16/"
+NLSpath = "./data/Group16/Classification/NLS_Group16.txt"
 classes12 = ["Class1.txt", "Class2.txt"]
 classes23 = ["Class2.txt", "Class3.txt"]
 classes13 = ["Class1.txt", "Class3.txt"]

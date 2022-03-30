@@ -8,8 +8,8 @@ import random
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.metrics import mean_squared_error
 
-NLSpath = "/home/abc/Documents/sem 6/deep learning/Group 16_Assignment1/data/Group16/Classification/NLS_Group16.txt"
-BIpath = "/home/abc/Documents/sem 6/deep learning/Group 16_Assignment1/data/Group16/Regression/BivariateData/16.csv"
+NLSpath = "./data/Group16/Classification/NLS_Group16.txt"
+BIpath = "./data/Group16/Regression/BivariateData/16.csv"
 
 def give_data():
     dfs = []
