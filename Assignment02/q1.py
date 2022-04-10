@@ -1,6 +1,7 @@
 # %% Imports
 
 import os
+import time
 import random
 import numpy as np
 import pandas as pd
@@ -8,10 +9,7 @@ from PIL import Image
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Activation, Dense
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.metrics import categorical_crossentropy
+
 
 
 # %% Importing Data
@@ -52,7 +50,7 @@ xtest, ytest = test.iloc[: , :-5], test.iloc[: , -5:]
 
 
 
-# %%
+# %% For Hardware Acceleration
 
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 print("Num GPUs Available: ", len(physical_devices))
@@ -69,10 +67,15 @@ model = keras.Sequential([
 	keras.layers.Dense(5, activation='softmax')
 ])
 
-optzr = keras.optimizers.SGD(learning_rate=0.001, momentum=0.0, nesterov=False)
-es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=0.0001, verbose=2)
+startTime = time.time()
+# optzr = keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
+# optzr = keras.optimizers.RMSprop(learning_rate=0.001, rho=0.99, momentum=0.9, epsilon=1E-8)
+optzr = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1E-8)
+es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=1)
+tb = keras.callbacks.TensorBoard(log_dir="logs/RMSprop", histogram_freq=1)
 model.compile(optimizer=optzr, loss='categorical_crossentropy', metrics=['accuracy'])
-out = model.fit(xtrain, ytrain, validation_data=(xval, yval), batch_size=32, verbose=2, epochs=20, callbacks=[es])
-
+out = model.fit(xtrain, ytrain, validation_data=(xval, yval), batch_size=32, verbose=2, epochs=1000, callbacks=[es, tb])
+print("Total time taken =", time.time() - startTime)
 
 # %%
+
