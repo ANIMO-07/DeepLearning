@@ -61,18 +61,18 @@ tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 model = keras.Sequential([
 	keras.layers.InputLayer(input_shape = (784, )),
-	keras.layers.Dense(32, activation='relu'),
-	keras.layers.Dense(15, activation='relu'),
-	keras.layers.Dense(3, activation='relu'),
-	keras.layers.Dense(5, activation='softmax')
+	keras.layers.Dense(32, activation='relu', name="HiddenLayer1"),
+	keras.layers.Dense(15, activation='relu', name="HiddenLayer2"),
+	keras.layers.Dense(3, activation='relu', name="HiddenLayer3"),
+	keras.layers.Dense(5, activation='softmax', name="OuputLayer")
 ])
 
 startTime = time.time()
 # optzr = keras.optimizers.SGD(learning_rate=0.001, momentum=0.9, nesterov=True)
 # optzr = keras.optimizers.RMSprop(learning_rate=0.001, rho=0.99, momentum=0.9, epsilon=1E-8)
 optzr = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1E-8)
-es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=1)
-tb = keras.callbacks.TensorBoard(log_dir="logs/RMSprop", histogram_freq=1)
+es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=5)
+tb = keras.callbacks.TensorBoard(log_dir="logs/Adam", histogram_freq=1)
 model.compile(optimizer=optzr, loss='categorical_crossentropy', metrics=['accuracy'])
 out = model.fit(xtrain, ytrain, validation_data=(xval, yval), batch_size=32, verbose=2, epochs=1000, callbacks=[es, tb])
 print("Total time taken =", time.time() - startTime)
