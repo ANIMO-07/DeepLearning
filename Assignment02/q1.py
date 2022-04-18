@@ -64,7 +64,7 @@ model = keras.Sequential([
 	keras.layers.Dense(78, activation='relu', name="HiddenLayer1"),
 	keras.layers.Dense(39, activation='relu', name="HiddenLayer2"),
 	keras.layers.Dense(20, activation='relu', name="HiddenLayer3"),
-	keras.layers.Dense(5, activation='softmax', name="OuputLayer")
+	keras.layers.Dense(5, activation='softmax', name="OutputLayer")
 ])
 
 startTime = time.time()

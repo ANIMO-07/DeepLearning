@@ -60,51 +60,77 @@ print("Num GPUs Available: ", len(physical_devices))
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
-# %% 
+# %% Single Layer Autoencoder
+
+numnodes = 32
 
 input_img = keras.Input(shape=(784,))
-encoded = keras.layers.Dense(32, activation='sigmoid')(input_img)
+encoded = keras.layers.Dense(numnodes, activation='sigmoid')(input_img)
 decoded = keras.layers.Dense(784, activation='linear')(encoded)
 
 autoencoder = keras.Model(input_img, decoded)
 encoder = keras.Model(input_img, encoded)
 
-encoded_input = keras.Input(shape=(32,))
+encoded_input = keras.Input(shape=(numnodes,))
 decoder_layer = autoencoder.layers[-1]
 decoder = keras.Model(encoded_input, decoder_layer(encoded_input))
 
-autoencoder.compile(optimizer='adam', loss='mse')
+es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=1)
+
+autoencoder.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
 
 # %%
 
-autoencoder.fit(xtrain, xtrain, epochs=50, batch_size=32, validation_data=(xval, xval))
+autoencoder.fit(xtrain, xtrain, epochs=1000, batch_size=32, validation_data=(xval, xval), callbacks = [es])
 
 
 # %%
 
-encoded_imgs = encoder.predict(xtest)
-decoded_imgs = decoder.predict(encoded_imgs)
+encoded_train = encoder.predict(xtrain)
+decoded_train = decoder.predict(encoded_train)
+
+encoded_val = encoder.predict(xval)
+decoded_val = decoder.predict(encoded_val)
 
 # %%
 
 import matplotlib.pyplot as plt
 
-n = 20  # How many digits we will display
+n = 20
+
 plt.figure(figsize=(20, 4))
 for i in range(n):
     # Display original
     ax = plt.subplot(2, n, i + 1)
-    plt.imshow(xtest.iloc[i].values.reshape(28,28))
+    plt.imshow(xtrain.iloc[i].values.reshape(28,28))
     plt.gray()
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 
     # Display reconstruction
     ax = plt.subplot(2, n, i + 1 + n)
-    plt.imshow(decoded_imgs[i].reshape(28, 28))
+    plt.imshow(decoded_train[i].reshape(28, 28))
     plt.gray()
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
 plt.show()
+
+
+# %% Running the classifier on the encoded representation
+
+model = keras.Sequential([
+	keras.layers.InputLayer(input_shape = (numnodes, )),
+	keras.layers.Dense(78, activation='relu', name="HiddenLayer1"),
+	keras.layers.Dense(39, activation='relu', name="HiddenLayer2"),
+	keras.layers.Dense(20, activation='relu', name="HiddenLayer3"),
+	keras.layers.Dense(5, activation='softmax', name="OutputLayer")
+])
+
+optzr = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1E-8)
+model.compile(optimizer=optzr, loss='categorical_crossentropy', metrics=['accuracy'])
+out = model.fit(encoded_train, ytrain, validation_data=(encoded_val, yval), batch_size=32, verbose=2, epochs=1000, callbacks=[es])
+
+
 # %%
+
