@@ -5,6 +5,7 @@ import random
 import numpy as np
 import pandas as pd
 from PIL import Image
+import matplotlib.pyplot as plt
 
 import tensorflow as tf
 from tensorflow import keras
@@ -59,12 +60,29 @@ print("Num GPUs Available: ", len(physical_devices))
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
+
+# %% 
+
+class Noise(keras.layers.Layer):
+	def call(self, inputs, training=True):
+		if random.random() <= 0.4:
+			# print(tf.shape(inputs))
+			# return inputs + self._customNoise(0.2)
+			# for i in range(inputs.shape):
+			noisy = inputs + tf.random.normal(tf.shape(inputs), mean=0, stddev=1)
+			# return inputs + tf.random.normal([11385,784], mean=0, stddev=0.5)
+			return tf.keras.backend.in_train_phase(noisy, inputs, training=training)
+		else:
+			return inputs
+
+
 # %% Single Layer Autoencoder
 
 numnodes = 32
 
 input_img = keras.Input(shape=(784,))
-encoded = keras.layers.Dense(numnodes, activation='sigmoid')(input_img)
+noisy = Noise()(input_img)
+encoded = keras.layers.Dense(numnodes, activation='sigmoid')(noisy)
 decoded = keras.layers.Dense(784, activation='linear')(encoded)
 
 autoencoder = keras.Model(input_img, decoded)
@@ -75,14 +93,24 @@ decoder_layer = autoencoder.layers[-1]
 decoder = keras.Model(encoded_input, decoder_layer(encoded_input))
 
 es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=1)
-tb = keras.callbacks.TensorBoard(log_dir="logs/autoencoder/one_layer", histogram_freq=1)
+# tb = keras.callbacks.TensorBoard(log_dir="logs/autoencoder/one_layer", histogram_freq=1)
 
 autoencoder.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
 
 # %%
 
-autoencoder.fit(xtrain, xtrain, epochs=1000, batch_size=32, validation_data=(xval, xval), callbacks = [es, tb])
+autoencoder.fit(xtrain, xtrain, epochs=1000, batch_size=32, validation_data=(xval, xval), callbacks = [es])
+
+# %%
+
+from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error
+
+encoded_test = encoder.predict(xtest)
+decoded_test = decoder.predict(encoded_test)
+
+print("Test Reconstruction Error:")
+print(mean_squared_error(xtest, decoded_test))
 
 
 # %%
@@ -131,50 +159,7 @@ optzr = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, eps
 model.compile(optimizer=optzr, loss='categorical_crossentropy', metrics=['accuracy'])
 out = model.fit(encoded_train, ytrain, validation_data=(encoded_val, yval), batch_size=32, verbose=2, epochs=1000, callbacks=[es])
 
-
 # %%
-
-from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error
-
-encoded_test = encoder.predict(xtest)
-decoded_test = decoder.predict(encoded_test)
-
-print("Test Reconstruction Error for chosen best model:")
-print(mean_squared_error(xtest, decoded_test))
-
-
-# %%
-
-trainpred = model.predict(encoded_train)
-trainpred = np.rint(trainpred)
-print("Train Accuracy:", accuracy_score(ytrain, trainpred))
-print("Confusion Matrix")
-print(confusion_matrix(tf.argmax(ytrain, axis=1), tf.argmax(trainpred, axis=1)))
-
-valpred = model.predict(encoded_val)
-valpred = np.rint(valpred)
-print("Val Accuracy:", accuracy_score(yval, valpred))
-print("Confusion Matrix")
-print(confusion_matrix(tf.argmax(yval, axis=1), tf.argmax(valpred, axis=1)))
-
-testpred = model.predict(encoded_test)
-testpred = np.rint(testpred)
-print("\nTest Accuracy:", accuracy_score(ytest, testpred))
-print("Confusion Matrix")
-print(confusion_matrix(tf.argmax(ytest, axis=1), tf.argmax(testpred, axis=1)))
-
-
-# %%
-
-from sklearn.metrics import ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
-numbers = [1, 5, 6, 7, 9]
-disp = ConfusionMatrixDisplay(confusion_matrix(tf.argmax(ytrain, axis=1), tf.argmax(trainpred, axis=1)), display_labels=numbers)
-disp.plot()
-plt.show()
-
-
-# %% Weight visualisation
 
 weights = encoder.layers[-1].weights
 arr = np.array(weights[0]).T
