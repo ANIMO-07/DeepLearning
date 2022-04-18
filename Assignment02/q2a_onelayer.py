@@ -1,7 +1,6 @@
 # %% Imports
 
 import os
-import time
 import random
 import numpy as np
 import pandas as pd
@@ -76,13 +75,14 @@ decoder_layer = autoencoder.layers[-1]
 decoder = keras.Model(encoded_input, decoder_layer(encoded_input))
 
 es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=1)
+tb = keras.callbacks.TensorBoard(log_dir="logs/autoencoder/one_layer", histogram_freq=1)
 
 autoencoder.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
 
 # %%
 
-autoencoder.fit(xtrain, xtrain, epochs=1000, batch_size=32, validation_data=(xval, xval), callbacks = [es])
+autoencoder.fit(xtrain, xtrain, epochs=1000, batch_size=32, validation_data=(xval, xval), callbacks = [es, tb])
 
 
 # %%
@@ -134,3 +134,34 @@ out = model.fit(encoded_train, ytrain, validation_data=(encoded_val, yval), batc
 
 # %%
 
+from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error
+
+encoded_test = encoder.predict(xtest)
+decoded_test = decoder.predict(encoded_test)
+
+print("Test Reconstruction Error for chosen best model:")
+print(mean_squared_error(xtest, decoded_test))
+
+
+# %%
+
+trainpred = model.predict(encoded_train)
+trainpred = np.rint(trainpred)
+print("Train Accuracy:", accuracy_score(ytrain, trainpred))
+print("Confusion Matrix")
+print(confusion_matrix(tf.argmax(ytrain, axis=1), tf.argmax(trainpred, axis=1)))
+
+valpred = model.predict(encoded_val)
+valpred = np.rint(valpred)
+print("Val Accuracy:", accuracy_score(yval, valpred))
+print("Confusion Matrix")
+print(confusion_matrix(tf.argmax(yval, axis=1), tf.argmax(valpred, axis=1)))
+
+testpred = model.predict(encoded_test)
+testpred = np.rint(testpred)
+print("\nTest Accuracy:", accuracy_score(ytest, testpred))
+print("Confusion Matrix")
+print(confusion_matrix(tf.argmax(ytest, axis=1), tf.argmax(testpred, axis=1)))
+
+
+# %%
