@@ -54,9 +54,9 @@ xtest = xtest/255
 
 # %% For Hardware Acceleration
 
-# physical_devices = tf.config.experimental.list_physical_devices('GPU')
-# print("Num GPUs Available: ", len(physical_devices))
-# tf.config.experimental.set_memory_growth(physical_devices[0], True)
+physical_devices = tf.config.experimental.list_physical_devices('GPU')
+print("Num GPUs Available: ", len(physical_devices))
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
 # %% Single Layer Autoencoder
@@ -82,7 +82,7 @@ decoder_layer = autoencoder.layers[-1]
 decoder = keras.Model(encoded_input2,decoder_layer(decoder_se_pehele(encoded_input2)))
 
 es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=1)
-tb = keras.callbacks.TensorBoard(log_dir="logs/autoencoder/one_layer", histogram_freq=1)
+tb = keras.callbacks.TensorBoard(log_dir="logs/autoencoder/3_layer", histogram_freq=1)
 
 autoencoder.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
@@ -134,7 +134,7 @@ model = keras.Sequential([
 
 optzr = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1E-8)
 model.compile(optimizer=optzr, loss='categorical_crossentropy', metrics=['accuracy'])
-out = model.fit(encoded_train, ytrain, validation_data=(encoded_val, yval), batch_size=32, verbose=2, epochs=10, callbacks=[es])
+out = model.fit(encoded_train, ytrain, validation_data=(encoded_val, yval), batch_size=32, verbose=2, epochs=1000, callbacks=[es])
 
 
 # %%
@@ -177,8 +177,4 @@ for j in range(128):
     plt.imshow(arr[j].reshape(16,16))
     plt.title(f"Hidden Neuron: {j}")
     plt.show()
-# %%
-
-plt.plot([1,2,3,4,5,6,7,8,9,10], [0.5756, 0.1878, 0.1615, 0.1424, 0.1279, 0.1237, 0.1168, 0.1066, 0.0950, 0.0889])
-plt.show()
 # %%

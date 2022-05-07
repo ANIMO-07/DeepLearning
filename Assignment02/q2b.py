@@ -76,6 +76,23 @@ class Noise(keras.layers.Layer):
 			return inputs
 
 
+# %%
+
+class Noise(keras.layers.Layer):
+	def _customNoise(self, percent=0.2):
+		noise = [0]*784
+		for i in range(784):
+			if random.random() <= percent:
+				noise[i] += np.random.normal(0, 0.5)
+		return noise
+
+	def call(self, inputs, training=False):
+		if training:
+			return inputs + self._customNoise(0.2)
+		else:
+			return inputs
+
+
 # %% Single Layer Autoencoder
 
 numnodes = 32
