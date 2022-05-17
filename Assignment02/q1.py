@@ -72,9 +72,9 @@ startTime = time.time()
 # optzr = keras.optimizers.RMSprop(learning_rate=0.001, rho=0.99, momentum=0.9, epsilon=1E-8)
 optzr = keras.optimizers.Adam(learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1E-8)
 es = keras.callbacks.EarlyStopping(monitor='loss', min_delta=1E-4, verbose=2, patience=5)
-tb = keras.callbacks.TensorBoard(log_dir="logs/Adam/60-20-40", histogram_freq=1)
+# tb = keras.callbacks.TensorBoard(log_dir="logs/Adam/60-20-40", histogram_freq=1)
 model.compile(optimizer=optzr, loss='categorical_crossentropy', metrics=['accuracy'])
-out = model.fit(xtrain, ytrain, validation_data=(xval, yval), batch_size=32, verbose=2, epochs=1000, callbacks=[es, tb])
+out = model.fit(xtrain, ytrain, validation_data=(xval, yval), batch_size=32, verbose=2, epochs=1000, callbacks=[es])
 print("Total time taken =", time.time() - startTime)
 
 
